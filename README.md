@@ -1,6 +1,6 @@
 # LaraFlowAI
 
-[![Latest Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://packagist.org/packages/laraflowai/laraflowai)
+[![Latest Version](https://img.shields.io/badge/version-alpha2-blue.svg)](https://packagist.org/packages/laraflowai/laraflowai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Laravel](https://img.shields.io/badge/Laravel-10.x%20%7C%2011.x-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple.svg)](https://php.net)

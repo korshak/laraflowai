@@ -2,7 +2,19 @@
 
 All notable changes to LaraFlowAI will be documented in this file.
 
-## [1.0.0] - 2024-01-01
+## [alpha2] - 2025-01-15
+
+### Added
+- **Comprehensive PHPDoc Documentation**: Complete documentation for all classes, methods, and properties
+- **Code Quality Improvements**: Enhanced type hints and documentation standards
+- **Removed Unused Middleware**: Cleaned up AuthMiddleware and RateLimitMiddleware that were not needed
+
+### Fixed
+- **Documentation Coverage**: All source files now have proper PHPDoc documentation
+- **Type Safety**: Improved type hints throughout the codebase
+- **Code Organization**: Removed unnecessary HTTP middleware files
+
+## [0.1.0] - 2025-09-05
 
 ### Added
 

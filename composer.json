@@ -3,6 +3,7 @@
     "description": "A Laravel extension for building multi-agent AI workflows inspired by crewAI",
     "type": "library",
     "license": "MIT",
+    "version": "alpha2",
     "authors": [
         {
             "name": "LaraFlowAI Team",
