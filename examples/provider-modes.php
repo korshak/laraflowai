@@ -10,78 +10,78 @@ echo "=== LaraFlowAI Provider Modes Example ===\n\n";
 
 // 1. Chat Mode (Default)
 echo "1. Chat Mode (Default):\n";
-$chatAgent = FlowAI::agent([
-    'role' => 'Assistant',
-    'goal' => 'Help users with questions',
-    'provider' => 'openai',
-    'config' => [
-        'model' => 'gpt-4',
-        'mode' => 'chat' // This is the default
-    ]
-]);
+$chatAgent = FlowAI::agent(
+    'Assistant',
+    'Help users with questions',
+    'openai'
+);
 
-$chatResult = $chatAgent->execute('What is the capital of France?');
-echo "Chat Result: " . $chatResult . "\n\n";
+$chatTask = FlowAI::task('What is the capital of France?');
+$chatResult = $chatAgent->handle($chatTask);
+echo "Chat Result: " . $chatResult->getContent() . "\n\n";
 
 // 2. Completion Mode (Text Completion)
 echo "2. Completion Mode (Text Completion):\n";
-$completionAgent = FlowAI::agent([
-    'role' => 'Text Generator',
-    'goal' => 'Generate text completions',
-    'provider' => 'openai',
-    'config' => [
-        'model' => 'gpt-4',
-        'mode' => 'completion'
-    ]
-]);
+$completionAgent = FlowAI::agent(
+    'Text Generator',
+    'Generate text completions',
+    'openai'
+);
 
-$completionResult = $completionAgent->execute('The future of artificial intelligence is');
-echo "Completion Result: " . $completionResult . "\n\n";
+$completionTask = FlowAI::task('The future of artificial intelligence is');
+$completionResult = $completionAgent->handle($completionTask);
+echo "Completion Result: " . $completionResult->getContent() . "\n\n";
 
 // 3. Embedding Mode (Vector Embeddings)
 echo "3. Embedding Mode (Vector Embeddings):\n";
-$embeddingAgent = FlowAI::agent([
-    'role' => 'Text Analyzer',
-    'goal' => 'Generate text embeddings',
-    'provider' => 'openai',
-    'config' => [
-        'model' => 'text-embedding-ada-002',
-        'mode' => 'embedding'
-    ]
-]);
+$embeddingAgent = FlowAI::agent(
+    'Text Analyzer',
+    'Generate text embeddings',
+    'openai'
+);
 
-$embeddingResult = $embeddingAgent->execute('This is a sample text for embedding');
-echo "Embedding Result: " . json_encode($embeddingResult) . "\n\n";
+$embeddingTask = FlowAI::task('This is a sample text for embedding');
+$embeddingResult = $embeddingAgent->handle($embeddingTask);
+echo "Embedding Result: " . $embeddingResult->getContent() . "\n\n";
 
 // 4. Check Provider Mode Support
 echo "4. Provider Mode Support:\n";
-$openaiProvider = app('laraflowai.manager')->getProvider('openai');
-$deepseekProvider = app('laraflowai.manager')->getProvider('deepseek');
+try {
+    $openaiProvider = FlowAI::llm('openai');
+    echo "OpenAI supported modes: " . implode(', ', $openaiProvider->getSupportedModes()) . "\n";
+} catch (Exception $e) {
+    echo "OpenAI provider not available: " . $e->getMessage() . "\n";
+}
 
-echo "OpenAI supported modes: " . implode(', ', $openaiProvider->getSupportedModes()) . "\n";
-echo "DeepSeek supported modes: " . implode(', ', $deepseekProvider->getSupportedModes()) . "\n\n";
+try {
+    $grokProvider = FlowAI::llm('grok');
+    echo "Grok supported modes: " . implode(', ', $grokProvider->getSupportedModes()) . "\n";
+} catch (Exception $e) {
+    echo "Grok provider not available: " . $e->getMessage() . "\n";
+}
+echo "\n";
 
 // 5. Dynamic Mode Switching
 echo "5. Dynamic Mode Switching:\n";
-$dynamicAgent = FlowAI::agent([
-    'role' => 'Multi-Mode Assistant',
-    'goal' => 'Switch between different modes',
-    'provider' => 'openai'
-]);
+$dynamicAgent = FlowAI::agent(
+    'Multi-Mode Assistant',
+    'Switch between different modes',
+    'openai'
+);
 
 // Start in chat mode
-$dynamicAgent->setMode('chat');
-$chatResponse = $dynamicAgent->execute('Hello, how are you?');
-echo "Chat mode response: " . $chatResponse . "\n";
+$chatTask = FlowAI::task('Hello, how are you?');
+$chatResponse = $dynamicAgent->handle($chatTask);
+echo "Chat mode response: " . $chatResponse->getContent() . "\n";
 
 // Switch to completion mode
-$dynamicAgent->setMode('completion');
-$completionResponse = $dynamicAgent->execute('The weather today is');
-echo "Completion mode response: " . $completionResponse . "\n";
+$completionTask = FlowAI::task('The weather today is');
+$completionResponse = $dynamicAgent->handle($completionTask);
+echo "Completion mode response: " . $completionResponse->getContent() . "\n";
 
 // Switch to embedding mode
-$dynamicAgent->setMode('embedding');
-$embeddingResponse = $dynamicAgent->execute('Sample text for embedding');
-echo "Embedding mode response: " . json_encode($embeddingResponse) . "\n\n";
+$embeddingTask = FlowAI::task('Sample text for embedding');
+$embeddingResponse = $dynamicAgent->handle($embeddingTask);
+echo "Embedding mode response: " . $embeddingResponse->getContent() . "\n\n";
 
 echo "=== Example Complete ===\n";

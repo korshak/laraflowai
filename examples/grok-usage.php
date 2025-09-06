@@ -24,48 +24,42 @@ $grokProvider = new \LaraFlowAI\Providers\GrokProvider([
 // Create memory manager
 $memory = new MemoryManager();
 
-// Create an agent with Grok
-$agent = new \LaraFlowAI\Agent(
+// Create an agent with Grok using FlowAI facade
+$agent = FlowAI::agent(
     'Grok Assistant',
     'You are a helpful AI assistant powered by Grok. Provide insightful and unfiltered truths with a sense of humor.',
-    $grokProvider,
-    $memory
+    'grok'
 );
 
 // Create a task
-$task = new \LaraFlowAI\Task('What is the meaning of life, the universe, and everything?');
+$task = FlowAI::task('What is the meaning of life, the universe, and everything?');
 
 // Execute the task
 try {
-    $response = $agent->handleTask($task);
+    $response = $agent->handle($task);
     echo "Grok Response: " . $response->getContent() . "\n\n";
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n\n";
 }
 
-// Example 2: Using LaraFlowAI Manager with Grok
-echo "=== Using LaraFlowAI Manager ===\n";
+// Example 2: Using Grok with Tools
+echo "=== Using Grok with Tools ===\n";
 
-// Configure the manager to use Grok
-$manager = new LaraFlowAIManager();
-
-// Set Grok as the default provider
-$manager->setDefaultProvider('grok');
-
-// Create an agent through the manager
-$agent2 = $manager->createAgent(
+// Create an agent with Grok and tools
+$agent2 = FlowAI::agent(
     'Grok Coding Assistant',
-    'You are an expert coding assistant powered by Grok. Help with programming questions and provide code examples.'
+    'You are an expert coding assistant powered by Grok. Help with programming questions and provide code examples.',
+    'grok'
 );
 
 // Add a tool to the agent
 $agent2->addTool(new \LaraFlowAI\Tools\HttpTool());
 
 // Create a coding task
-$codingTask = new \LaraFlowAI\Task('Write a PHP function to calculate the Fibonacci sequence');
+$codingTask = FlowAI::task('Write a PHP function to calculate the Fibonacci sequence');
 
 try {
-    $response2 = $agent2->handleTask($codingTask);
+    $response2 = $agent2->handle($codingTask);
     echo "Grok Coding Response: " . $response2->getContent() . "\n\n";
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n\n";
@@ -75,7 +69,7 @@ try {
 echo "=== Streaming with Grok ===\n";
 
 try {
-    $streamingTask = new \LaraFlowAI\Task('Tell me a short story about a robot learning to love');
+    $streamingTask = FlowAI::task('Tell me a short story about a robot learning to love');
     
     echo "Streaming response:\n";
     foreach ($agent->stream($streamingTask->getDescription()) as $chunk) {
@@ -92,12 +86,12 @@ echo "=== Conversation History with Grok ===\n";
 
 try {
     // First message
-    $firstTask = new \LaraFlowAI\Task('Hello, my name is Alice. What should I know about you?');
-    $firstResponse = $agent->handleTask($firstTask);
+    $firstTask = FlowAI::task('Hello, my name is Alice. What should I know about you?');
+    $firstResponse = $agent->handle($firstTask);
     echo "Grok: " . $firstResponse->getContent() . "\n\n";
     
     // Follow-up message with conversation history
-    $followUpTask = new \LaraFlowAI\Task('That sounds interesting! Can you tell me more about your capabilities?');
+    $followUpTask = FlowAI::task('That sounds interesting! Can you tell me more about your capabilities?');
     
     // Add conversation history to the task
     $followUpTask->setConfig([
@@ -107,7 +101,7 @@ try {
         ]
     ]);
     
-    $followUpResponse = $agent->handleTask($followUpTask);
+    $followUpResponse = $agent->handle($followUpTask);
     echo "Grok: " . $followUpResponse->getContent() . "\n\n";
 } catch (Exception $e) {
     echo "Conversation Error: " . $e->getMessage() . "\n\n";

@@ -154,27 +154,22 @@ $analysisTask = FlowAI::task('Analyze the research data')
     ]);
 
 // Create a crew to execute both tasks
-$crew = FlowAI::crew([
-    'execution_mode' => 'sequential',
-    'timeout' => 300
-])
-->addAgent($researcher)
-->addAgent($analyzer)
-->addTask($researchTask)
-->addTask($analysisTask);
+$crew = FlowAI::crew()
+->agents([$researcher, $analyzer])
+->tasks([$researchTask, $analysisTask]);
 
 // Execute the crew
 try {
-    $result = $crew->kickoff();
+    $result = $crew->execute();
     
     if ($result->isSuccess()) {
         echo "✅ Crew execution successful\n";
         echo "Execution time: " . $result->getExecutionTime() . "s\n";
         echo "Successful tasks: " . $result->getSuccessfulTaskCount() . "\n";
         
-        foreach ($result->getResponses() as $index => $response) {
+        foreach ($result->getResults() as $index => $taskResult) {
             echo "Task " . ($index + 1) . " result:\n";
-            echo $response->getContent() . "\n\n";
+            echo $taskResult['response']->getContent() . "\n\n";
         }
     } else {
         echo "❌ Crew execution failed: " . $result->getErrorMessage() . "\n";

@@ -47,27 +47,24 @@ class ContentManager
         ];
         
         // Create and execute crew
-        $crew = FlowAI::crew(['execution_mode' => 'sequential'])
-            ->addAgent($researcher)
-            ->addAgent($writer)
-            ->addAgent($editor)
-            ->addAgent($seo)
-            ->addTasks($tasks);
+        $crew = FlowAI::crew()
+            ->agents([$researcher, $writer, $editor, $seo])
+            ->tasks($tasks);
         
-        $result = $crew->kickoff();
+        $result = $crew->execute();
         
         if ($result->isSuccess()) {
             return [
                 'success' => true,
-                'content' => $result->getResponses(),
+                'content' => $result->getResults(),
                 'execution_time' => $result->getExecutionTime(),
-                'word_count' => str_word_count($result->getResponses()[0]->getContent()),
+                'word_count' => str_word_count($result->getResults()[0]['response']->getContent()),
             ];
         }
         
         return [
             'success' => false,
-            'error' => $result->getError(),
+            'error' => $result->getErrorMessage(),
         ];
     }
 }
@@ -194,7 +191,7 @@ class AutomatedWorkflow
 {
     public function processNewUser(string $userId, string $email): array
     {
-        $flow = FlowAI::flow(['name' => 'New User Onboarding']);
+        $flow = FlowAI::flow();
         
         // Step 1: Send welcome email
         $flow->addStep(FlowStep::custom('send_welcome', function($context) use ($email) {
@@ -233,10 +230,9 @@ class AutomatedWorkflow
         $personalizer = FlowAI::agent('Content Personalizer', 'Create personalized content');
         $recommender = FlowAI::agent('Recommendation Engine', 'Suggest relevant content');
         
-        $crew = FlowAI::crew(['execution_mode' => 'sequential'])
-            ->addAgent($personalizer)
-            ->addAgent($recommender)
-            ->addTasks([
+        $crew = FlowAI::crew()
+            ->agents([$personalizer, $recommender])
+            ->tasks([
                 FlowAI::task("Create personalized welcome content for user {$userId}"),
                 FlowAI::task("Recommend relevant articles and features for user {$userId}"),
             ]);

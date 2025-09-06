@@ -22,9 +22,9 @@ $topic = 'Laravel 11 new features';
 // Create agents with different providers
 $providers = [
     'openai' => ['name' => 'OpenAI GPT-4', 'model' => 'gpt-4'],
-    'groq' => ['name' => 'Groq Llama3', 'model' => 'llama3-8b-8192'],
-    'gemini' => ['name' => 'Google Gemini', 'model' => 'gemini-pro'],
-    'anthropic' => ['name' => 'Anthropic Claude', 'model' => 'claude-3-sonnet-20240229'],
+    'grok' => ['name' => 'Grok AI', 'model' => 'grok-4'],
+    'gemini' => ['name' => 'Google Gemini', 'model' => 'gemini-1.5-flash'],
+    'ollama' => ['name' => 'Ollama Local', 'model' => 'llama3.2:3b'],
 ];
 
 $responses = [];
@@ -83,13 +83,13 @@ foreach ($responses as $provider => $result) {
 echo "2. Provider-Specific Use Cases\n";
 echo "==============================\n";
 
-// Groq for fast, cost-effective responses
-echo "Groq - Fast and Cost-Effective:\n";
+// Grok for creative and humorous responses
+echo "Grok - Creative and Humorous:\n";
 try {
-    $groqAgent = FlowAI::agent('Quick Responder', 'Provide fast, concise answers', 'groq');
-    $groqTask = FlowAI::task('What are the main benefits of using Laravel?');
-    $groqResponse = $groqAgent->handle($groqTask);
-    echo "Response: " . substr($groqResponse->getContent(), 0, 150) . "...\n";
+    $grokAgent = FlowAI::agent('Creative Assistant', 'Provide creative and humorous answers', 'grok');
+    $grokTask = FlowAI::task('What are the main benefits of using Laravel?');
+    $grokResponse = $grokAgent->handle($grokTask);
+    echo "Response: " . substr($grokResponse->getContent(), 0, 150) . "...\n";
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
@@ -115,7 +115,7 @@ echo "===================\n";
 
 function getResponseWithFallback(string $prompt): array
 {
-    $providers = ['openai', 'groq', 'gemini', 'anthropic'];
+    $providers = ['openai', 'grok', 'gemini', 'ollama'];
     
     foreach ($providers as $provider) {
         try {
@@ -170,7 +170,7 @@ foreach ($tasks as $taskType => $prompt) {
     
     $taskResults = [];
     
-    foreach (['groq', 'openai', 'gemini'] as $provider) {
+    foreach (['grok', 'openai', 'gemini'] as $provider) {
         try {
             $agent = FlowAI::agent('Task Specialist', 'Complete tasks effectively', $provider);
             $task = FlowAI::task($prompt);
@@ -212,9 +212,9 @@ echo "==================\n";
 
 echo "Estimated costs for 1000 tokens (approximate):\n";
 echo "- OpenAI GPT-4: ~$0.03\n";
-echo "- Groq Llama3: ~$0.00005\n";
-echo "- Gemini Pro: ~$0.0005\n";
-echo "- Anthropic Claude: ~$0.003\n";
+echo "- Grok AI: ~$0.01\n";
+echo "- Gemini 1.5 Flash: ~$0.0005\n";
+echo "- Ollama Local: Free (local processing)\n";
 echo "\n";
 
 // Example 6: Performance benchmarking
@@ -225,7 +225,7 @@ $benchmarkPrompt = 'Write a short summary of PHP 8.3 features';
 
 $benchmarkResults = [];
 
-foreach (['groq', 'openai', 'gemini'] as $provider) {
+foreach (['grok', 'openai', 'gemini'] as $provider) {
     echo "Benchmarking {$provider}...\n";
     
     $times = [];

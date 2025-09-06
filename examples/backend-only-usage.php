@@ -72,25 +72,23 @@ $tasks = [
 ];
 
 // Create and execute crew
-$crew = FlowAI::crew(['execution_mode' => 'sequential'])
-    ->addAgent($writer)
-    ->addAgent($editor)
-    ->addAgent($seo)
-    ->addTasks($tasks);
+$crew = FlowAI::crew()
+    ->agents([$writer, $editor, $seo])
+    ->tasks($tasks);
 
-$crewResult = $crew->kickoff();
+$crewResult = $crew->execute();
 
 if ($crewResult->isSuccess()) {
     echo "Crew executed successfully!\n";
     echo "Execution time: " . $crewResult->getExecutionTime() . " seconds\n";
     echo "Successful tasks: " . $crewResult->getSuccessfulTaskCount() . "\n";
     
-    foreach ($crewResult->getResponses() as $index => $response) {
+    foreach ($crewResult->getResults() as $index => $taskResult) {
         echo "\nTask " . ($index + 1) . " Response:\n";
-        echo $response->getContent() . "\n";
+        echo $taskResult['response']->getContent() . "\n";
     }
 } else {
-    echo "Crew execution failed: " . $crewResult->getError() . "\n";
+    echo "Crew execution failed: " . $crewResult->getErrorMessage() . "\n";
 }
 
 // Example 4: Memory Usage
@@ -119,7 +117,7 @@ echo "=============\n";
 use LaraFlowAI\FlowStep;
 use LaraFlowAI\FlowCondition;
 
-$flow = FlowAI::flow(['name' => 'Content Publishing Flow']);
+$flow = FlowAI::flow();
 
 // Add steps to the flow
 $flow->addStep(FlowStep::crew('content_creation', $crew))
@@ -137,7 +135,7 @@ if ($flowResult->isSuccess()) {
     echo "Execution time: " . $flowResult->getExecutionTime() . " seconds\n";
     echo "Steps completed: " . $flowResult->getSuccessfulStepCount() . "\n";
 } else {
-    echo "Flow execution failed: " . $flowResult->getError() . "\n";
+    echo "Flow execution failed: " . $flowResult->getErrorMessage() . "\n";
 }
 
 // Example 6: Custom Provider
