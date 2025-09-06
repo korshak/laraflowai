@@ -67,21 +67,6 @@ class GrokProvider extends BaseProvider
         ];
     }
 
-    protected function calculateCost(int $promptTokens, int $completionTokens): float
-    {
-        // Grok pricing (as of 2025) - update as needed
-        $pricing = [
-            'grok-4' => ['prompt' => 3.00 / 1000000, 'completion' => 15.00 / 1000000], // per million tokens
-            'grok-3' => ['prompt' => 3.00 / 1000000, 'completion' => 15.00 / 1000000], // per million tokens
-            'grok-3-mini' => ['prompt' => 0.30 / 1000000, 'completion' => 0.50 / 1000000], // per million tokens
-            'grok-beta' => ['prompt' => 5.00 / 1000000, 'completion' => 15.00 / 1000000], // per million tokens
-        ];
-
-        $modelPricing = $pricing[$this->model] ?? $pricing['grok-4'];
-        
-        return ($promptTokens / 1000000 * $modelPricing['prompt']) + 
-               ($completionTokens / 1000000 * $modelPricing['completion']);
-    }
 
     protected function getProviderName(): string
     {

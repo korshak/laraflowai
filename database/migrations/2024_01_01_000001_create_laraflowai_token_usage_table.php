@@ -18,7 +18,6 @@ return new class extends Migration
             $table->integer('prompt_tokens');
             $table->integer('completion_tokens');
             $table->integer('total_tokens');
-            $table->decimal('cost', 10, 6)->nullable();
             $table->json('metadata')->nullable();
             $table->timestamps();
             

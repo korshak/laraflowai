@@ -204,11 +204,21 @@ class Agent
      */
     protected function buildContext(Task $task): array
     {
+        $taskContext = $task->getContext();
+        
+        // Логування для дебагу
+        Log::info('LaraFlowAI: Building context', [
+            'task_description' => $task->getDescription(),
+            'task_context' => $taskContext,
+            'task_context_count' => count($taskContext),
+        ]);
+        
         $context = array_merge($this->context, [
             'role' => $this->role,
             'goal' => $this->goal,
             'task' => $task->getDescription(),
             'memory' => $this->recallRelevantMemory($task),
+            'task_context' => $taskContext, // Додаємо контекст з завдання
         ]);
 
         return $context;
@@ -288,11 +298,32 @@ class Agent
         if (!empty($context['memory'])) {
             $prompt .= "Relevant context from memory:\n";
             foreach ($context['memory'] as $memory) {
-                $memoryData = InputSanitizer::sanitizeText($memory['data'] ?? '');
+                $memoryData = $memory['data'] ?? '';
+                if (is_array($memoryData)) {
+                    $memoryData = json_encode($memoryData);
+                }
+                $memoryData = InputSanitizer::sanitizeText((string) $memoryData);
                 $prompt .= "- {$memoryData}\n";
             }
             $prompt .= "\n";
         }
+        
+        // Додаємо контекст з попередніх завдань
+        if (!empty($context['task_context'])) {
+            $prompt .= "Context from previous tasks:\n";
+            foreach ($context['task_context'] as $key => $value) {
+                $sanitizedKey = InputSanitizer::sanitizeText((string) $key);
+                $sanitizedValue = InputSanitizer::sanitizeText((string) $value);
+                $prompt .= "- {$sanitizedKey}: {$sanitizedValue}\n";
+            }
+            $prompt .= "\n";
+        }
+        
+        // Логування для дебагу
+        Log::info('LaraFlowAI: Task context', [
+            'task_context' => $context['task_context'] ?? 'empty',
+            'context_keys' => array_keys($context),
+        ]);
         
         if (!empty($this->tools)) {
             $toolNames = array_map([InputSanitizer::class, 'sanitizeText'], array_keys($this->tools));

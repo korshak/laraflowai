@@ -63,7 +63,11 @@ class Crew
     public function __construct(MemoryContract $memory, array $config = [])
     {
         $this->memory = $memory;
-        $this->config = $config;
+        $this->config = array_merge([
+            'execution_mode' => 'sequential',
+            'max_retries' => 3,
+            'timeout' => 60
+        ], $config);
     }
 
     /**
@@ -112,6 +116,20 @@ class Crew
     }
 
     /**
+     * Set multiple agents at once.
+     * 
+     * @param array<Agent> $agents Array of agents to add
+     * @return self Returns the crew instance for method chaining
+     */
+    public function agents(array $agents): self
+    {
+        foreach ($agents as $agent) {
+            $this->addAgent($agent);
+        }
+        return $this;
+    }
+
+    /**
      * Add a task to the crew.
      * 
      * @param Task $task The task to add
@@ -149,6 +167,40 @@ class Crew
     public function getTasks(): array
     {
         return $this->tasks;
+    }
+
+    /**
+     * Set multiple tasks at once.
+     * 
+     * @param array<Task> $tasks Array of tasks to add
+     * @return self Returns the crew instance for method chaining
+     */
+    public function tasks(array $tasks): self
+    {
+        foreach ($tasks as $task) {
+            $this->addTask($task);
+        }
+        return $this;
+    }
+
+    /**
+     * Create method for method chaining compatibility.
+     * 
+     * @return self Returns the crew instance
+     */
+    public function create(): self
+    {
+        return $this;
+    }
+
+    /**
+     * Execute method for compatibility.
+     * 
+     * @return CrewResult The result of crew execution
+     */
+    public function execute(): CrewResult
+    {
+        return $this->kickoff();
     }
 
     /**

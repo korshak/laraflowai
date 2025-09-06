@@ -64,39 +64,12 @@ class DeepSeekProvider extends BaseProvider
         ];
     }
 
-    protected function calculateCost(int $promptTokens, int $completionTokens): float
-    {
-        // DeepSeek pricing as of 2025.09.05
-        // Cache Hit: $0.07 per million tokens (input)
-        // Cache Miss: $0.56 per million tokens (input)  
-        // Output: $1.68 per million tokens
-        $pricing = [
-            'deepseek-chat' => [
-                'prompt_cache_hit' => 0.07 / 1000000,
-                'prompt_cache_miss' => 0.56 / 1000000,
-                'completion' => 1.68 / 1000000
-            ],
-            'deepseek-reasoner' => [
-                'prompt_cache_hit' => 0.07 / 1000000,
-                'prompt_cache_miss' => 0.56 / 1000000,
-                'completion' => 1.68 / 1000000
-            ]
-        ];
-
-        $modelPricing = $pricing[$this->model] ?? $pricing['deepseek-chat'];
-        
-        // For now, assume cache miss for input tokens (most common scenario)
-        // In a real implementation, you might want to track cache hit rates
-        $promptCost = $promptTokens * $modelPricing['prompt_cache_miss'];
-        $completionCost = $completionTokens * $modelPricing['completion'];
-        
-        return $promptCost + $completionCost;
-    }
 
     protected function getProviderName(): string
     {
         return 'deepseek';
     }
+
 
     public function getAvailableModels(): array
     {
@@ -133,7 +106,7 @@ class DeepSeekProvider extends BaseProvider
         return ['chat']; // DeepSeek currently only supports chat mode
     }
 
-    public function stream(string $prompt, array $options = [], callable $callback = null): \Generator
+    public function stream(string $prompt, array $options = [], ?callable $callback = null): \Generator
     {
         $payload = $this->formatPayload($prompt, $options);
         $payload['stream'] = true;

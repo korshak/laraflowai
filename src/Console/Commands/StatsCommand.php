@@ -35,7 +35,6 @@ class StatsCommand extends Command
             ['Metric', 'Value'],
             [
                 ['Monthly Tokens', number_format($summary['monthly_tokens'])],
-                ['Monthly Cost', '$' . number_format($summary['monthly_cost'], 2)],
                 ['Monthly Requests', number_format($summary['monthly_requests'])],
                 ['Avg Tokens/Request', number_format($summary['avg_tokens_per_request'])],
             ]
@@ -60,13 +59,12 @@ class StatsCommand extends Command
             $this->newLine();
             $this->info('Provider Breakdown:');
             $this->table(
-                ['Provider', 'Model', 'Tokens', 'Cost', 'Requests'],
+                ['Provider', 'Model', 'Tokens', 'Requests'],
                 array_map(function ($stat) {
                     return [
                         $stat->provider,
                         $stat->model,
                         number_format($stat->total_tokens),
-                        '$' . number_format($stat->total_cost, 2),
                         number_format($stat->request_count),
                     ];
                 }, $providerStats)

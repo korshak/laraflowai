@@ -76,20 +76,6 @@ class GeminiProvider extends BaseProvider
         ];
     }
 
-    protected function calculateCost(int $promptTokens, int $completionTokens): float
-    {
-        // Gemini pricing (as of 2025) - update as needed
-        $pricing = [
-            'gemini-2.5-pro' => ['prompt' => 1.25 / 1000000, 'completion' => 10.00 / 1000000], // per million tokens
-            'gemini-2.5-flash' => ['prompt' => 0.075 / 1000000, 'completion' => 0.30 / 1000000], // per million tokens
-            'gemini-2.5-flash-lite' => ['prompt' => 0.019 / 1000000, 'completion' => 0.075 / 1000000], // per million tokens
-        ];
-
-        $modelPricing = $pricing[$this->model] ?? $pricing['gemini-pro'];
-        
-        return ($promptTokens / 1000 * $modelPricing['prompt']) + 
-               ($completionTokens / 1000 * $modelPricing['completion']);
-    }
 
     protected function getProviderName(): string
     {
@@ -131,17 +117,12 @@ class GeminiProvider extends BaseProvider
             // Track token usage
             $tokenUsage = $this->extractTokenUsage($responseData);
             if (!empty($tokenUsage)) {
-                $cost = $this->calculateCost(
-                    $tokenUsage['prompt_tokens'] ?? 0,
-                    $tokenUsage['completion_tokens'] ?? 0
-                );
-                
                 $this->tokenTracker->track(
                     $this->getProviderName(),
                     $this->model,
                     $tokenUsage['prompt_tokens'] ?? 0,
                     $tokenUsage['completion_tokens'] ?? 0,
-                    $cost,
+                    null, // No cost calculation
                     ['prompt_length' => strlen($prompt)]
                 );
             }

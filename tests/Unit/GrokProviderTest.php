@@ -100,20 +100,6 @@ class GrokProviderTest extends TestCase
         $this->assertEquals(30, $usage['total_tokens']);
     }
 
-    public function test_grok_provider_calculates_cost_correctly()
-    {
-        $config = ['api_key' => 'test-key', 'model' => 'grok-4'];
-        $provider = new GrokProvider($config);
-
-        $reflection = new \ReflectionClass($provider);
-        $method = $reflection->getMethod('calculateCost');
-        $method->setAccessible(true);
-
-        // Test Grok-4 pricing: $3.00 per million input tokens, $15.00 per million output tokens
-        $cost = $method->invoke($provider, 1000, 500); // 1000 input, 500 output tokens
-        $expectedCost = (1000 / 1000000 * 3.00) + (500 / 1000000 * 15.00);
-        $this->assertEquals($expectedCost, $cost, '', 0.0001);
-    }
 
     public function test_grok_provider_returns_available_models()
     {

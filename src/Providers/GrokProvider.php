@@ -49,8 +49,7 @@ class GrokProvider extends BaseProvider
             'temperature' => $options['temperature'] ?? 0.7,
             'stream' => false,
             'top_p' => $options['top_p'] ?? 1.0,
-            'frequency_penalty' => $options['frequency_penalty'] ?? 0.0,
-            'presence_penalty' => $options['presence_penalty'] ?? 0.0,
+            // Grok doesn't support frequency_penalty and presence_penalty
         ];
     }
 
@@ -69,31 +68,19 @@ class GrokProvider extends BaseProvider
         ];
     }
 
-    protected function calculateCost(int $promptTokens, int $completionTokens): float
-    {
-        // Grok pricing (as of 2024) - update as needed
-        $pricing = [
-            'grok-4' => ['prompt' => 3.00, 'completion' => 15.00], // per million tokens
-            'grok-3' => ['prompt' => 1.00, 'completion' => 5.00],  // per million tokens
-        ];
-
-        $modelPricing = $pricing[$this->model] ?? $pricing['grok-4'];
-        
-        return ($promptTokens / 1000000 * $modelPricing['prompt']) + 
-               ($completionTokens / 1000000 * $modelPricing['completion']);
-    }
 
     protected function getProviderName(): string
     {
         return 'grok';
     }
 
+
     public function getSupportedModes(): array
     {
         return ['chat']; // Grok currently only supports chat mode
     }
 
-    public function stream(string $prompt, array $options = [], callable $callback = null): \Generator
+    public function stream(string $prompt, array $options = [], ?callable $callback = null): \Generator
     {
         $payload = $this->formatChatPayload($prompt, $options);
         $payload['stream'] = true;
@@ -165,7 +152,7 @@ class GrokProvider extends BaseProvider
     /**
      * Get model capabilities
      */
-    public function getModelCapabilities(string $model = null): array
+    public function getModelCapabilities(?string $model = null): array
     {
         $model = $model ?? $this->model;
         

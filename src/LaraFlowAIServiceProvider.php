@@ -43,6 +43,9 @@ class LaraFlowAIServiceProvider extends ServiceProvider
         // Register MCP Client with alias
         $this->app->alias('laraflowai.mcp', MCPClient::class);
 
+        // Register facade
+        $this->app->alias('laraflowai', \LaraFlowAI\Facades\FlowAI::class);
+
         // Merge config
         $this->mergeConfigFrom(__DIR__ . '/../config/laraflowai.php', 'laraflowai');
     }

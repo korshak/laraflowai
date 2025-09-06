@@ -64,9 +64,9 @@ class LLMFactory extends Manager
     /**
      * Register a custom provider
      */
-    public function extend(string $driver, callable $resolver): self
+    public function extend($driver, \Closure $callback)
     {
-        $this->customProviders[$driver] = $resolver;
+        $this->customProviders[$driver] = $callback;
         return $this;
     }
 
@@ -75,10 +75,11 @@ class LLMFactory extends Manager
      */
     protected function getProviderConfig(string $driver): array
     {
-        $config = $this->app['config']['laraflowai.providers'][$driver] ?? [];
+        $config = config("laraflowai.providers.{$driver}", []);
         
         if (empty($config)) {
-            throw new InvalidArgumentException("Provider [{$driver}] not configured.");
+            $availableProviders = array_keys(config('laraflowai.providers', []));
+            throw new InvalidArgumentException("Provider [{$driver}] not configured. Available providers: " . implode(', ', $availableProviders));
         }
 
         return $config;
@@ -107,41 +108,64 @@ class LLMFactory extends Manager
     /**
      * Create OpenAI provider
      */
-    protected function createOpenaiDriver(array $config): ProviderContract
+    protected function createOpenaiDriver(): ProviderContract
     {
+        $config = $this->getProviderConfig('openai');
         return new \LaraFlowAI\Providers\OpenAIProvider($config);
     }
 
     /**
      * Create Anthropic provider
      */
-    protected function createAnthropicDriver(array $config): ProviderContract
+    protected function createAnthropicDriver(): ProviderContract
     {
+        $config = $this->getProviderConfig('anthropic');
         return new \LaraFlowAI\Providers\AnthropicProvider($config);
     }
 
     /**
      * Create Ollama provider
      */
-    protected function createOllamaDriver(array $config): ProviderContract
+    protected function createOllamaDriver(): ProviderContract
     {
+        $config = $this->getProviderConfig('ollama');
         return new \LaraFlowAI\Providers\OllamaProvider($config);
     }
 
     /**
      * Create Groq provider
      */
-    protected function createGroqDriver(array $config): ProviderContract
+    protected function createGroqDriver(): ProviderContract
     {
+        $config = $this->getProviderConfig('groq');
         return new \LaraFlowAI\Providers\GroqProvider($config);
     }
 
     /**
      * Create Gemini provider
      */
-    protected function createGeminiDriver(array $config): ProviderContract
+    protected function createGeminiDriver(): ProviderContract
     {
+        $config = $this->getProviderConfig('gemini');
         return new \LaraFlowAI\Providers\GeminiProvider($config);
+    }
+
+    /**
+     * Create Grok provider
+     */
+    protected function createGrokDriver(): ProviderContract
+    {
+        $config = $this->getProviderConfig('grok');
+        return new \LaraFlowAI\Providers\GrokProvider($config);
+    }
+
+    /**
+     * Create DeepSeek provider
+     */
+    protected function createDeepseekDriver(): ProviderContract
+    {
+        $config = $this->getProviderConfig('deepseek');
+        return new \LaraFlowAI\Providers\DeepSeekProvider($config);
     }
 
     /**

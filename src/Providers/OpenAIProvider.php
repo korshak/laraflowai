@@ -115,30 +115,6 @@ class OpenAIProvider extends BaseProvider
         ];
     }
 
-    /**
-     * Calculate cost based on OpenAI token usage.
-     * 
-     * @param int $promptTokens Number of prompt tokens
-     * @param int $completionTokens Number of completion tokens
-     * @return float The calculated cost in USD
-     */
-    protected function calculateCost(int $promptTokens, int $completionTokens): float
-    {
-        // OpenAI pricing (as of 2025) - update as needed
-        $pricing = [
-            'gpt-5' => ['prompt' => 1.25 / 1000000, 'completion' => 10.00 / 1000000],
-            'gpt-5-mini' => ['prompt' => 0.25 / 1000000, 'completion' => 2.00 / 1000000],
-            'gpt-5-nano' => ['prompt' => 0.05 / 1000000, 'completion' => 0.40 / 1000000],
-            'o3-pro' => ['prompt' => 20.00 / 1000000, 'completion' => 80.00 / 1000000],
-            'gpt-4o' => ['prompt' => 2.50 / 1000000, 'completion' => 10.00 / 1000000],
-            'gpt-4o-mini' => ['prompt' => 0.15 / 1000000, 'completion' => 0.60 / 1000000],
-        ];
-
-        $modelPricing = $pricing[$this->model] ?? $pricing['gpt-3.5-turbo'];
-        
-        return ($promptTokens / 1000 * $modelPricing['prompt']) + 
-               ($completionTokens / 1000 * $modelPricing['completion']);
-    }
 
     /**
      * Get provider name for tracking.

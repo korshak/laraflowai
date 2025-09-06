@@ -55,11 +55,6 @@ class OllamaProvider extends BaseProvider
         ];
     }
 
-    protected function calculateCost(int $promptTokens, int $completionTokens): float
-    {
-        // Ollama is typically free for local usage
-        return 0.0;
-    }
 
     protected function getProviderName(): string
     {

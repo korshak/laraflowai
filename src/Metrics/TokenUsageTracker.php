@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * TokenUsageTracker class tracks token usage and costs for LLM providers.
+ * TokenUsageTracker class tracks token usage for LLM providers.
  * 
- * This class provides functionality to track token usage, calculate costs,
- * and generate statistics for LLM provider usage. It stores data in a
- * database table and provides various reporting methods.
+ * This class provides functionality to track token usage and generate
+ * statistics for LLM provider usage. It stores data in a database
+ * table and provides various reporting methods.
  * 
  * @package LaraFlowAI\Metrics
  * @author LaraFlowAI Team
@@ -33,7 +33,7 @@ class TokenUsageTracker
      * @param string $model The model name
      * @param int $promptTokens Number of prompt tokens
      * @param int $completionTokens Number of completion tokens
-     * @param float|null $cost The cost of the request
+     * @param float|null $cost The cost of the request (deprecated, always null)
      * @param array<string, mixed> $metadata Additional metadata
      */
     public function track(
@@ -52,7 +52,6 @@ class TokenUsageTracker
             'prompt_tokens' => $promptTokens,
             'completion_tokens' => $completionTokens,
             'total_tokens' => $totalTokens,
-            'cost' => $cost,
             'metadata' => json_encode($metadata),
             'created_at' => now(),
         ];
@@ -61,7 +60,7 @@ class TokenUsageTracker
         DB::table($this->table)->insert($data);
 
         // Update cache for quick access
-        $this->updateCache($provider, $model, $totalTokens, $cost);
+        $this->updateCache($provider, $model, $totalTokens, null);
     }
 
     /**
@@ -86,7 +85,6 @@ class TokenUsageTracker
             SUM(prompt_tokens) as total_prompt_tokens,
             SUM(completion_tokens) as total_completion_tokens,
             SUM(total_tokens) as total_tokens,
-            SUM(cost) as total_cost,
             COUNT(*) as request_count,
             AVG(total_tokens) as avg_tokens_per_request
         ')->groupBy('provider', 'model')->get();
@@ -110,7 +108,6 @@ class TokenUsageTracker
             DATE(created_at) as date,
             provider,
             SUM(total_tokens) as total_tokens,
-            SUM(cost) as total_cost,
             COUNT(*) as request_count
         ')->groupBy('date', 'provider')->orderBy('date')->get();
 
@@ -130,22 +127,14 @@ class TokenUsageTracker
     }
 
     /**
-     * Get provider costs
+     * Get provider costs (deprecated - always returns empty array)
+     * 
+     * @deprecated Cost tracking has been removed
      */
     public function getProviderCosts(int $days = 30): array
     {
-        $costs = DB::table($this->table)
-            ->where('created_at', '>=', now()->subDays($days))
-            ->whereNotNull('cost')
-            ->selectRaw('
-                provider,
-                SUM(cost) as total_cost,
-                AVG(cost) as avg_cost_per_request
-            ')
-            ->groupBy('provider')
-            ->get();
-
-        return $costs->toArray();
+        // Cost tracking has been removed
+        return [];
     }
 
     /**
@@ -156,12 +145,10 @@ class TokenUsageTracker
         $cacheKey = "laraflowai_usage_{$provider}_{$model}";
         $current = Cache::get($cacheKey, [
             'total_tokens' => 0,
-            'total_cost' => 0,
             'request_count' => 0
         ]);
 
         $current['total_tokens'] += $tokens;
-        $current['total_cost'] += $cost ?? 0;
         $current['request_count'] += 1;
 
         Cache::put($cacheKey, $current, 86400); // 24 hours
@@ -184,12 +171,10 @@ class TokenUsageTracker
     {
         $monthly = $this->getCurrentMonthUsage();
         $totalTokens = array_sum(array_column($monthly, 'total_tokens'));
-        $totalCost = array_sum(array_column($monthly, 'total_cost'));
         $totalRequests = array_sum(array_column($monthly, 'request_count'));
 
         return [
             'monthly_tokens' => $totalTokens,
-            'monthly_cost' => $totalCost,
             'monthly_requests' => $totalRequests,
             'avg_tokens_per_request' => $totalRequests > 0 ? $totalTokens / $totalRequests : 0,
             'providers' => array_unique(array_column($monthly, 'provider')),

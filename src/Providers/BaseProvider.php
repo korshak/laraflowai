@@ -158,14 +158,6 @@ abstract class BaseProvider implements ProviderContract
      */
     abstract protected function extractTokenUsage(array $response): array;
 
-    /**
-     * Calculate cost based on token usage.
-     * 
-     * @param int $promptTokens Number of prompt tokens
-     * @param int $completionTokens Number of completion tokens
-     * @return float The calculated cost
-     */
-    abstract protected function calculateCost(int $promptTokens, int $completionTokens): float;
 
     /**
      * Get provider name for tracking.
@@ -211,17 +203,12 @@ abstract class BaseProvider implements ProviderContract
             // Track token usage
             $tokenUsage = $this->extractTokenUsage($responseData);
             if (!empty($tokenUsage)) {
-                $cost = $this->calculateCost(
-                    $tokenUsage['prompt_tokens'] ?? 0,
-                    $tokenUsage['completion_tokens'] ?? 0
-                );
-                
                 $this->tokenTracker->track(
                     $this->getProviderName(),
                     $this->model,
                     $tokenUsage['prompt_tokens'] ?? 0,
                     $tokenUsage['completion_tokens'] ?? 0,
-                    $cost,
+                    null, // No cost calculation
                     ['prompt_length' => strlen($prompt)]
                 );
             }

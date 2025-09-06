@@ -140,22 +140,6 @@ class DeepSeekProviderTest extends TestCase
         $this->assertEquals(150, $result['total_tokens']);
     }
 
-    public function test_deepseek_provider_calculates_cost_correctly()
-    {
-        $config = ['api_key' => 'test-key'];
-        $provider = new DeepSeekProvider($config);
-
-        $reflection = new \ReflectionClass($provider);
-        $method = $reflection->getMethod('calculateCost');
-        $method->setAccessible(true);
-
-        // Test with deepseek-chat model (cache miss pricing)
-        $cost = $method->invoke($provider, 1000, 500); // 1000 prompt tokens, 500 completion tokens
-        
-        // Expected: (1000 * 0.56/1000000) + (500 * 1.68/1000000) = 0.00056 + 0.00084 = 0.0014
-        $expectedCost = (1000 * 0.56 / 1000000) + (500 * 1.68 / 1000000);
-        $this->assertEqualsWithDelta($expectedCost, $cost, 0.00001);
-    }
 
     public function test_deepseek_provider_returns_available_models()
     {

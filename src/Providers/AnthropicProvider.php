@@ -52,27 +52,6 @@ class AnthropicProvider extends BaseProvider
         ];
     }
 
-    protected function calculateCost(int $promptTokens, int $completionTokens): float
-    {
-        // Anthropic pricing (Claude 3 & 4) - update as needed
-        $pricing = [
-            // Claude 3
-            'claude-3-opus' => ['prompt' => 15.00 / 1000000, 'completion' => 75.00 / 1000000],
-            'claude-3-sonnet' => ['prompt' => 3.00 / 1000000, 'completion' => 15.00 / 1000000],
-            'claude-3-haiku' => ['prompt' => 0.80 / 1000000, 'completion' => 4.00 / 1000000],
-            'claude-3-flash' => ['prompt' => 0.25 / 1000000, 'completion' => 1.25 / 1000000],
-        
-            // Claude 4
-            'claude-4-opus' => ['prompt' => 15.00 / 1000000, 'completion' => 75.00 / 1000000],
-            'claude-4-sonnet' => ['prompt' => 3.00 / 1000000, 'completion' => 15.00 / 1000000],
-            'claude-4-sonnet-long-context' => ['prompt' => 6.00 / 1000000, 'completion' => 22.50 / 1000000],
-        ];
-
-        $modelPricing = $pricing[$this->model] ?? $pricing['claude-3-sonnet-20240229'];
-        
-        return ($promptTokens / 1000 * $modelPricing['prompt']) + 
-               ($completionTokens / 1000 * $modelPricing['completion']);
-    }
 
     protected function getProviderName(): string
     {
