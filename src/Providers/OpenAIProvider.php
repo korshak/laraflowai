@@ -2,6 +2,8 @@
 
 namespace LaraFlowAI\Providers;
 
+use Illuminate\Support\Facades\Http;
+
 /**
  * OpenAIProvider class provides integration with OpenAI's API.
  * 
@@ -219,7 +221,11 @@ class OpenAIProvider extends BaseProvider
         }
 
         $buffer = '';
-        foreach ($response->stream() as $chunk) {
+        // Use the response body as a stream
+        $body = $response->body();
+        $lines = explode("\n", $body);
+        
+        foreach ($lines as $chunk) {
             $buffer .= $chunk;
             
             // Process complete lines

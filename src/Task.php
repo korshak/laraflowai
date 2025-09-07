@@ -257,4 +257,37 @@ class Task
             'config' => $this->config,
         ];
     }
+
+    /**
+     * Enable streaming mode for this task.
+     * 
+     * @param callable|null $chunkCallback Optional callback for each chunk
+     * @return self Returns the task instance for method chaining
+     */
+    public function stream(?callable $chunkCallback = null): self
+    {
+        $this->config['streaming'] = true;
+        $this->config['chunk_callback'] = $chunkCallback;
+        return $this;
+    }
+
+    /**
+     * Check if streaming is enabled for this task.
+     * 
+     * @return bool True if streaming is enabled, false otherwise
+     */
+    public function isStreaming(): bool
+    {
+        return $this->config['streaming'] ?? false;
+    }
+
+    /**
+     * Get the chunk callback for streaming.
+     * 
+     * @return callable|null The chunk callback if set, null otherwise
+     */
+    public function getChunkCallback(): ?callable
+    {
+        return $this->config['chunk_callback'] ?? null;
+    }
 }

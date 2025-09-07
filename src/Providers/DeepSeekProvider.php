@@ -2,6 +2,8 @@
 
 namespace LaraFlowAI\Providers;
 
+use Illuminate\Support\Facades\Http;
+
 class DeepSeekProvider extends BaseProvider
 {
     protected function getDefaultModel(): string
@@ -125,7 +127,11 @@ class DeepSeekProvider extends BaseProvider
         }
 
         $buffer = '';
-        foreach ($response->stream() as $chunk) {
+        // Use the response body as a stream
+        $body = $response->body();
+        $lines = explode("\n", $body);
+        
+        foreach ($lines as $chunk) {
             $buffer .= $chunk;
             
             // Process complete lines

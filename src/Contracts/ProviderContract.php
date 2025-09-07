@@ -35,7 +35,7 @@ interface ProviderContract
      * @param callable|null $callback Optional callback for each chunk
      * @return \Generator Generator yielding response chunks
      */
-    public function stream(string $prompt, array $options = [], callable $callback = null): \Generator;
+    public function stream(string $prompt, array $options = [], ?callable $callback = null): \Generator;
 
     /**
      * Get the provider configuration.

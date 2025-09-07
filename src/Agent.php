@@ -138,6 +138,46 @@ class Agent
     }
 
     /**
+     * Handle a task with streaming response.
+     * 
+     * This method processes a task similar to handle() but returns a streaming
+     * response that can be consumed token-by-token for real-time output.
+     * 
+     * @param Task $task The task to handle
+     * @param callable|null $chunkCallback Optional callback for each chunk
+     * @return StreamingResponse The streaming response
+     * 
+     * @throws \Exception If task processing fails
+     */
+    public function stream(Task $task, ?callable $chunkCallback = null): StreamingResponse
+    {
+        Log::info('LaraFlowAI: Agent handling task with streaming', [
+            'agent_role' => $this->role,
+            'task_description' => $task->getDescription()
+        ]);
+
+        // Build context from memory and task
+        $context = $this->buildContext($task);
+        
+        // Generate prompt
+        $prompt = $this->generatePrompt($task, $context);
+        
+        // Execute tools if needed
+        $toolResults = $this->executeTools($task);
+        
+        // Generate streaming response using LLM
+        $stream = $this->generateStreamingResponse($prompt, $toolResults, $chunkCallback);
+        
+        // Create streaming response
+        $streamingResponse = new StreamingResponse($stream, $this->role, $toolResults, $chunkCallback);
+        
+        // Store in memory after completion (we'll need to handle this differently)
+        $this->storeStreamingInMemory($task, $streamingResponse);
+        
+        return $streamingResponse;
+    }
+
+    /**
      * Add a tool to the agent.
      * 
      * @param ToolContract $tool The tool to add
@@ -389,6 +429,23 @@ class Agent
     }
 
     /**
+     * Generate streaming response using LLM.
+     * 
+     * @param string $prompt The prompt to send to the LLM
+     * @param array<string, mixed> $toolResults The results from tool execution
+     * @param callable|null $chunkCallback Optional callback for each chunk
+     * @return \Generator Generator yielding response chunks
+     */
+    protected function generateStreamingResponse(string $prompt, array $toolResults, ?callable $chunkCallback = null): \Generator
+    {
+        $options = array_merge($this->config['llm_options'] ?? [], [
+            'tool_results' => $toolResults
+        ]);
+        
+        return $this->provider->stream($prompt, $options, $chunkCallback);
+    }
+
+    /**
      * Store task and response in memory.
      * 
      * @param Task $task The task that was processed
@@ -407,6 +464,35 @@ class Agent
             'agent_role' => $this->role,
             'agent_goal' => $this->goal,
             'relevance' => 1.0,
+        ];
+        
+        $this->memory->store($key, $data, $metadata);
+    }
+
+    /**
+     * Store streaming response in memory after completion.
+     * 
+     * @param Task $task The task that was processed
+     * @param StreamingResponse $streamingResponse The streaming response
+     */
+    protected function storeStreamingInMemory(Task $task, StreamingResponse $streamingResponse): void
+    {
+        // We'll store the complete response after streaming is finished
+        // This method can be called when the streaming response is complete
+        $key = "agent_{$this->role}_streaming_" . time();
+        $data = [
+            'task' => $task->getDescription(),
+            'response' => $streamingResponse->getContent(),
+            'timestamp' => now()->toISOString(),
+            'streaming' => true,
+            'execution_time' => $streamingResponse->getExecutionTime(),
+        ];
+        
+        $metadata = [
+            'agent_role' => $this->role,
+            'agent_goal' => $this->goal,
+            'relevance' => 1.0,
+            'streaming' => true,
         ];
         
         $this->memory->store($key, $data, $metadata);

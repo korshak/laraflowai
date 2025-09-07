@@ -59,7 +59,7 @@ class LaraFlowAIManager
      * @param string|null $driver The provider driver name
      * @return ProviderContract The LLM provider instance
      */
-    public function llm(string $driver = null): ProviderContract
+    public function llm(?string $driver = null): ProviderContract
     {
         return $this->llmFactory->driver($driver);
     }
@@ -72,7 +72,7 @@ class LaraFlowAIManager
      * @param string|null $provider The provider driver name
      * @return Agent A new Agent instance
      */
-    public function agent(string $role, string $goal, string $provider = null): Agent
+    public function agent(string $role, string $goal, ?string $provider = null): Agent
     {
         $llmProvider = $provider ? $this->llm($provider) : $this->llm();
         

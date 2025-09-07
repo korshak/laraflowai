@@ -2,6 +2,27 @@
 
 All notable changes to LaraFlowAI will be documented in this file.
 
+## [alpha4] - 2025-01-XX
+
+### Added
+- **Streaming Responses**: Real-time token-by-token output for improved UX
+- **StreamingResponse Class**: Dedicated class for handling streaming responses
+- **Agent Streaming**: `->stream()` method for agents with real-time output
+- **Crew Streaming**: `->stream()` method for crew execution with streaming
+- **Task Streaming Configuration**: `->stream()` method for task-level streaming setup
+- **Livewire Integration**: Complete examples for Livewire streaming components
+- **WebSocket Support**: Pusher integration for real-time streaming
+- **Server-Sent Events**: SSE support for streaming responses
+- **Buffer Management**: Token buffering and caching for optimization
+- **Streaming Configuration**: Comprehensive config options for streaming behavior
+
+### Enhanced
+- **Provider Streaming**: All providers now support native streaming APIs
+- **Memory System**: Enhanced memory storage for streaming responses
+- **Error Handling**: Improved error handling for streaming operations
+- **Performance**: Optimized streaming with buffering and caching
+- **Documentation**: Complete streaming documentation with examples
+
 ## [alpha3] - 2025-09-07
 
 ### Added

@@ -204,6 +204,137 @@ class Crew
     }
 
     /**
+     * Execute the crew with streaming support.
+     * 
+     * This method executes all tasks in the crew with streaming responses
+     * for real-time output. Only the first task will be streamed, others
+     * will use regular execution.
+     * 
+     * @param callable|null $chunkCallback Optional callback for each chunk
+     * @return \Generator Generator yielding streaming responses
+     * 
+     * @throws \Exception If crew execution fails
+     */
+    public function stream(?callable $chunkCallback = null): \Generator
+    {
+        Log::info('LaraFlowAI: Starting crew execution with streaming', [
+            'agents' => array_keys($this->agents),
+            'tasks_count' => count($this->tasks)
+        ]);
+
+        $startTime = microtime(true);
+        $this->results = [];
+
+        try {
+            foreach ($this->tasks as $index => $task) {
+                $agentRole = $task->getAgent();
+                
+                if (!$agentRole) {
+                    // Auto-assign to first available agent
+                    $agentRole = array_key_first($this->agents);
+                }
+
+                $agent = $this->getAgent($agentRole);
+                
+                if (!$agent) {
+                    throw new \Exception("Agent '{$agentRole}' not found in crew");
+                }
+
+                Log::info('LaraFlowAI: Executing task with streaming', [
+                    'task_index' => $index,
+                    'agent_role' => $agentRole,
+                    'task_description' => $task->getDescription()
+                ]);
+
+                // Use streaming for the first task, regular execution for others
+                if ($index === 0) {
+                    $streamingResponse = $agent->stream($task, $chunkCallback);
+                    
+                    // Yield each chunk from the streaming response
+                    while ($streamingResponse->hasMoreChunks()) {
+                        $chunk = $streamingResponse->getNextChunk();
+                        if ($chunk !== null) {
+                            yield [
+                                'task_index' => $index,
+                                'task' => $task,
+                                'agent' => $agentRole,
+                                'chunk' => $chunk,
+                                'is_streaming' => true,
+                                'is_complete' => false,
+                            ];
+                        }
+                    }
+                    
+                    // Final result for the streaming task
+                    $this->results[] = [
+                        'task_index' => $index,
+                        'task' => $task,
+                        'agent' => $agentRole,
+                        'response' => $streamingResponse->toResponse(),
+                        'execution_time' => $streamingResponse->getExecutionTime(),
+                        'is_streaming' => true,
+                    ];
+                    
+                    yield [
+                        'task_index' => $index,
+                        'task' => $task,
+                        'agent' => $agentRole,
+                        'response' => $streamingResponse->toResponse(),
+                        'is_streaming' => true,
+                        'is_complete' => true,
+                    ];
+                } else {
+                    // Regular execution for subsequent tasks
+                    $response = $agent->handle($task);
+                    
+                    $this->results[] = [
+                        'task_index' => $index,
+                        'task' => $task,
+                        'agent' => $agentRole,
+                        'response' => $response,
+                        'execution_time' => $response->getExecutionTime(),
+                        'is_streaming' => false,
+                    ];
+                    
+                    yield [
+                        'task_index' => $index,
+                        'task' => $task,
+                        'agent' => $agentRole,
+                        'response' => $response,
+                        'is_streaming' => false,
+                        'is_complete' => true,
+                    ];
+                }
+
+                // Pass context to next task if sequential
+                if ($this->config['execution_mode'] !== 'parallel' && isset($this->tasks[$index + 1])) {
+                    $nextTask = $this->tasks[$index + 1];
+                    $lastResponse = $this->results[$index]['response'];
+                    $nextTask->addContext('previous_response', $lastResponse->getContent());
+                    $nextTask->addContext('previous_agent', $agentRole);
+                }
+            }
+
+            $executionTime = microtime(true) - $startTime;
+
+            Log::info('LaraFlowAI: Crew streaming execution completed', [
+                'execution_time' => $executionTime,
+                'results_count' => count($this->results)
+            ]);
+
+        } catch (\Exception $e) {
+            $executionTime = microtime(true) - $startTime;
+            
+            Log::error('LaraFlowAI: Crew streaming execution failed', [
+                'error' => $e->getMessage(),
+                'execution_time' => $executionTime
+            ]);
+
+            throw $e;
+        }
+    }
+
+    /**
      * Execute the crew (run all tasks).
      * 
      * This method executes all tasks in the crew either sequentially or in parallel

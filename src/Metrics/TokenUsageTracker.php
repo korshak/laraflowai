@@ -41,7 +41,7 @@ class TokenUsageTracker
         string $model,
         int $promptTokens,
         int $completionTokens,
-        float $cost = null,
+        ?float $cost = null,
         array $metadata = []
     ): void {
         $totalTokens = $promptTokens + $completionTokens;
@@ -66,7 +66,7 @@ class TokenUsageTracker
     /**
      * Get usage statistics
      */
-    public function getStats(string $provider = null, string $model = null, int $days = 30): array
+    public function getStats(?string $provider = null, ?string $model = null, int $days = 30): array
     {
         $query = DB::table($this->table)
             ->where('created_at', '>=', now()->subDays($days));
@@ -95,7 +95,7 @@ class TokenUsageTracker
     /**
      * Get daily usage for a period
      */
-    public function getDailyUsage(string $provider = null, int $days = 30): array
+    public function getDailyUsage(?string $provider = null, int $days = 30): array
     {
         $query = DB::table($this->table)
             ->where('created_at', '>=', now()->subDays($days));
@@ -140,7 +140,7 @@ class TokenUsageTracker
     /**
      * Update cache with usage data
      */
-    protected function updateCache(string $provider, string $model, int $tokens, float $cost = null): void
+    protected function updateCache(string $provider, string $model, int $tokens, ?float $cost = null): void
     {
         $cacheKey = "laraflowai_usage_{$provider}_{$model}";
         $current = Cache::get($cacheKey, [

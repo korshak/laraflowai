@@ -242,7 +242,7 @@ abstract class BaseProvider implements ProviderContract
      * @param callable|null $callback Optional callback for each chunk
      * @return \Generator Generator yielding response chunks
      */
-    public function stream(string $prompt, array $options = [], callable $callback = null): \Generator
+    public function stream(string $prompt, array $options = [], ?callable $callback = null): \Generator
     {
         // Default implementation - override in specific providers
         $response = $this->generate($prompt, $options);

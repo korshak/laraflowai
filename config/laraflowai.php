@@ -206,6 +206,39 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Streaming Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure streaming settings for real-time responses.
+    |
+    */
+
+    'streaming' => [
+        'enabled' => env('LARAFLOWAI_STREAMING_ENABLED', true),
+        'default_buffer_size' => env('LARAFLOWAI_STREAMING_BUFFER_SIZE', 10),
+        'max_chunk_size' => env('LARAFLOWAI_STREAMING_MAX_CHUNK_SIZE', 1000),
+        'timeout' => env('LARAFLOWAI_STREAMING_TIMEOUT', 300),
+        'chunk_delay' => env('LARAFLOWAI_STREAMING_CHUNK_DELAY', 0), // milliseconds
+        'enable_caching' => env('LARAFLOWAI_STREAMING_CACHE', true),
+        'cache_ttl' => env('LARAFLOWAI_STREAMING_CACHE_TTL', 3600),
+        
+        // WebSocket configuration
+        'websocket' => [
+            'enabled' => env('LARAFLOWAI_WEBSOCKET_ENABLED', false),
+            'driver' => env('LARAFLOWAI_WEBSOCKET_DRIVER', 'pusher'),
+            'channel_prefix' => env('LARAFLOWAI_WEBSOCKET_CHANNEL_PREFIX', 'laraflowai'),
+        ],
+        
+        // Server-Sent Events configuration
+        'sse' => [
+            'enabled' => env('LARAFLOWAI_SSE_ENABLED', true),
+            'retry_timeout' => env('LARAFLOWAI_SSE_RETRY_TIMEOUT', 3000), // milliseconds
+            'keep_alive_interval' => env('LARAFLOWAI_SSE_KEEP_ALIVE', 30), // seconds
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | MCP (Model Context Protocol) Configuration
     |--------------------------------------------------------------------------
     |

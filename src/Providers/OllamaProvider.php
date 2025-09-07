@@ -2,6 +2,8 @@
 
 namespace LaraFlowAI\Providers;
 
+use Illuminate\Support\Facades\Http;
+
 class OllamaProvider extends BaseProvider
 {
     protected function getDefaultModel(): string
@@ -66,7 +68,7 @@ class OllamaProvider extends BaseProvider
         return ['chat']; // Ollama currently only supports chat mode
     }
 
-    public function stream(string $prompt, array $options = [], callable $callback = null): \Generator
+    public function stream(string $prompt, array $options = [], ?callable $callback = null): \Generator
     {
         $payload = $this->formatChatPayload($prompt, $options);
         $payload['stream'] = true;
@@ -84,8 +86,24 @@ class OllamaProvider extends BaseProvider
             throw new \Exception("Ollama streaming request failed: " . $response->body());
         }
 
-        foreach ($response->stream() as $chunk) {
-            $data = json_decode($chunk, true);
+        // Use simple HTTP request and process response
+        $response = Http::withHeaders($headers)
+            ->timeout(300) // 5 minutes timeout
+            ->post($this->getApiEndpoint(), $payload);
+
+        if (!$response->successful()) {
+            throw new \Exception("Ollama streaming request failed: " . $response->body());
+        }
+
+        // Process the response body as streaming data
+        $body = $response->body();
+        $lines = explode("\n", $body);
+        
+        foreach ($lines as $line) {
+            if (trim($line) === '') continue;
+            
+            $data = json_decode($line, true);
+            if (json_last_error() !== JSON_ERROR_NONE) continue;
             
             if (isset($data['response'])) {
                 if ($callback) {
