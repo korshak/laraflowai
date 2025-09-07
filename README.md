@@ -1,22 +1,26 @@
 # LaraFlowAI
 
-[![Latest Version](https://img.shields.io/badge/version-alpha3-blue.svg)](https://packagist.org/packages/laraflowai/laraflowai)
+[![Latest Version](https://img.shields.io/badge/version-0.1.0--alpha3-blue.svg)](https://packagist.org/packages/laraflowai/laraflowai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Laravel](https://img.shields.io/badge/Laravel-10.x%20%7C%2011.x%20%7C%2012.x-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple.svg)](https://php.net)
 
-A powerful Laravel package for building multi-agent AI workflows. Create intelligent agents, crews, and flows with support for multiple AI providers and advanced workflow management.
+A powerful Laravel package for building multi-agent AI workflows inspired by crewAI. Create intelligent agents, crews, and flows with support for multiple AI providers, advanced workflow management, and Model Context Protocol (MCP) integration.
 
 ## ✨ Features
 
 - 🤖 **Multi-Agent System**: Create intelligent agents with specific roles and goals
-- 👥 **Crew Management**: Organize agents into collaborative teams
-- 🔄 **Flow Control**: Build sophisticated workflows with conditional logic
-- 🧠 **Memory System**: Short-term and long-term memory with intelligent recall
+- 👥 **Crew Management**: Organize agents into collaborative teams with sequential or parallel execution
+- 🔄 **Flow Control**: Build sophisticated workflows with conditional logic, steps, and events
+- 🧠 **Memory System**: Short-term and long-term memory with intelligent recall and search
 - 🔌 **Multi-Provider Support**: OpenAI, Anthropic, Grok, Gemini, DeepSeek, Groq, and Ollama
 - 🛠️ **Extensible Tools**: HTTP, Database, Filesystem, MCP, and custom tool implementations
+- 🌐 **MCP Integration**: Connect to external Model Context Protocol servers for extended capabilities
 - ⚡ **Queue Integration**: Asynchronous execution with Laravel queues
 - 📊 **Observability**: Comprehensive logging and performance analytics
+- 💬 **Interactive Chat**: Built-in console chat interface for testing and development
+- 🎯 **Artisan Commands**: Generate agents, crews, and flows with artisan commands
+- 🔄 **Streaming Support**: Real-time streaming responses with Server-Sent Events
 
 ## 🚀 Installation
 
@@ -54,10 +58,19 @@ GROQ_API_KEY=your_groq_api_key
 
 # Local AI (Ollama)
 OLLAMA_HOST=http://localhost:11434
-OLLAMA_MODEL=llama3.2:3b
+OLLAMA_MODEL=mistral
 
 # LaraFlowAI Settings
 LARAFLOWAI_DEFAULT_PROVIDER=openai
+
+# Optional: Enable MCP integration
+LARAFLOWAI_MCP_ENABLED=false
+
+# Optional: Enable streaming
+LARAFLOWAI_STREAMING_ENABLED=true
+
+# Optional: Enable queue processing
+LARAFLOWAI_QUEUE_ENABLED=false
 ```
 
 ## 🚀 Quick Start
@@ -66,6 +79,7 @@ LARAFLOWAI_DEFAULT_PROVIDER=openai
 
 ```php
 use LaraFlowAI\Facades\FlowAI;
+use LaraFlowAI\Tools\HttpTool;
 
 // Create an agent with fluent interface
 $agent = FlowAI::agent(
@@ -203,6 +217,80 @@ foreach ($toolResults as $tool => $result) {
 }
 ```
 
+### Streaming Responses
+
+```php
+use LaraFlowAI\Facades\FlowAI;
+
+// Create an agent with streaming support
+$agent = FlowAI::agent('Content Writer', 'Create engaging content');
+
+// Create a task
+$task = FlowAI::task('Write a comprehensive guide about Laravel 12');
+
+// Stream the response
+$streamingResponse = $agent->stream($task, function ($chunk) {
+    echo $chunk; // Output each chunk as it arrives
+});
+
+// Or get the complete response after streaming
+$completeResponse = $streamingResponse->toResponse();
+echo $completeResponse->getContent();
+```
+
+### MCP Integration
+
+```php
+use LaraFlowAI\Tools\MCPTool;
+
+// Create an agent with MCP tool
+$agent = FlowAI::agent('MCP Assistant', 'Use external MCP servers')
+    ->addTool(new MCPTool());
+
+// Create a task that uses MCP
+$task = FlowAI::task('Get weather information for New York')
+    ->setToolInput('mcp', [
+        'server' => 'weather_server',
+        'action' => 'get_weather',
+        'parameters' => ['location' => 'New York']
+    ]);
+
+$response = $agent->handle($task);
+```
+
+### Flow Usage
+
+```php
+use LaraFlowAI\Facades\FlowAI;
+use LaraFlowAI\FlowStep;
+use LaraFlowAI\FlowCondition;
+
+// Create a flow with multiple steps
+$flow = FlowAI::flow()
+    ->addStep(new FlowStep('Research Step', 'crew'))
+    ->addStep(new FlowStep('Analysis Step', 'crew'))
+    ->addStep(new FlowStep('Report Step', 'crew'))
+    ->addCondition(new FlowCondition('if research_complete'));
+
+// Add event handlers
+$flow->onEvent('step_completed', function ($data) {
+    echo "Step completed: " . $data['step']->getName() . "\n";
+});
+
+// Run the flow
+$result = $flow->run();
+
+if ($result->isSuccess()) {
+    echo "Flow completed successfully!\n";
+    echo "Total execution time: " . $result->getExecutionTime() . "s\n";
+    
+    foreach ($result->getResults() as $stepResult) {
+        echo "Step: " . $stepResult['step']->getName() . "\n";
+        echo "Success: " . ($stepResult['success'] ? 'Yes' : 'No') . "\n";
+    }
+}
+```
+
 ### Custom Tools
 
 ```php
@@ -282,6 +370,32 @@ Each provider can be configured in `config/laraflowai.php`:
 - **Groq**: Fast inference engine for various models
 - **Ollama**: Local models like Llama, Mistral, etc.
 
+## 🎯 Artisan Commands
+
+LaraFlowAI includes several artisan commands for development and management:
+
+```bash
+# Interactive chat interface
+php artisan laraflowai:chat
+
+# Chat with specific agent/crew/flow
+php artisan laraflowai:chat --agent=MyAgent
+php artisan laraflowai:chat --crew=MyCrew
+php artisan laraflowai:chat --flow=MyFlow
+
+# Generate new classes
+php artisan laraflowai:make:agent MyAgent --role="Content Writer" --goal="Create engaging content"
+php artisan laraflowai:make:crew MyCrew --agents="Writer,Editor" --tasks="Write content,Review content"
+php artisan laraflowai:make:flow MyFlow --steps="Step1,Step2" --conditions="Condition1"
+
+# Memory management
+php artisan laraflowai:cleanup-memory --days=30
+php artisan laraflowai:cleanup-tokens --days=7
+
+# View statistics
+php artisan laraflowai:stats
+```
+
 ## 🧪 Testing
 
 ```bash
@@ -299,10 +413,12 @@ php artisan laraflowai:cleanup-memory --days=30
 
 LaraFlowAI is optimized for performance:
 
-- **Caching**: Intelligent caching of responses and memory
+- **Caching**: Intelligent caching of responses, memory, and MCP server data
 - **Queue Integration**: Async processing for long-running tasks
 - **Token Optimization**: Efficient token usage and cost tracking
 - **Memory Management**: Smart memory cleanup and garbage collection
+- **Streaming**: Real-time response streaming for better user experience
+- **MCP Caching**: Cached tool and resource discovery for faster MCP operations
 
 ## 🔧 Troubleshooting
 
@@ -312,6 +428,8 @@ LaraFlowAI is optimized for performance:
 2. **Memory issues**: Run `php artisan laraflowai:cleanup-memory`
 3. **Queue not working**: Ensure queue workers are running
 4. **Token limits**: Check your provider's rate limits and quotas
+5. **MCP connection issues**: Verify MCP server configuration and connectivity
+6. **Streaming not working**: Check streaming configuration and provider support
 
 ### Debug Mode
 
@@ -326,6 +444,8 @@ tail -f storage/logs/laraflowai.log
 ## 📚 Documentation
 
 - **[API Documentation](docs/API.md)** - Complete API reference
+- **[Artisan Commands](docs/ARTISAN_COMMANDS.md)** - Available console commands
+- **[Streaming Guide](docs/STREAMING.md)** - Real-time streaming implementation
 - **[Universal MCP Client](docs/UNIVERSAL_MCP_CLIENT.md)** - MCP integration guide
 - **[Laravel Quick Start](docs/LARAVEL_QUICKSTART.md)** - 5-minute setup guide
 - **[Laravel Usage Guide](docs/LARAVEL_USAGE.md)** - Comprehensive integration guide
@@ -366,6 +486,7 @@ This package is open-sourced software licensed under the [MIT license](https://o
 - Inspired by [crewAI](https://github.com/joaomdmoura/crewAI)
 - Built for the Laravel community
 - Powered by multiple AI providers
+- Model Context Protocol (MCP) integration for extended capabilities
 
 ---
 

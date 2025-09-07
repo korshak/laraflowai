@@ -70,6 +70,10 @@ class LaraFlowAIServiceProvider extends ServiceProvider
                 \LaraFlowAI\Console\Commands\CleanupMemoryCommand::class,
                 \LaraFlowAI\Console\Commands\CleanupTokensCommand::class,
                 \LaraFlowAI\Console\Commands\StatsCommand::class,
+                \LaraFlowAI\Console\Commands\MakeAgentCommand::class,
+                \LaraFlowAI\Console\Commands\MakeCrewCommand::class,
+                \LaraFlowAI\Console\Commands\MakeFlowCommand::class,
+                \LaraFlowAI\Console\Commands\ChatCommand::class,
             ]);
         }
     }
