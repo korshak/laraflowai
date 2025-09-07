@@ -2,7 +2,56 @@
 
 All notable changes to LaraFlowAI will be documented in this file.
 
-## [alpha2] - 2025-01-15
+## [alpha3] - 2025-09-07
+
+### Added
+- **Universal MCP Client**: Complete Model Context Protocol (MCP) support with JSON-RPC 2.0
+- **New AI Providers**: Added support for Grok, Gemini, DeepSeek, and Groq providers
+- **MCP Tool Integration**: Built-in MCP tool support for external service integration
+- **Fluent Interface**: Enhanced method chaining for agents, crews, and flows
+- **Batch Operations**: New batch methods for agent and task management
+- **Laravel 12 Support**: Full compatibility with Laravel 12.x
+- **Enhanced Error Handling**: Improved error messages and exception handling
+- **MCP Documentation**: Comprehensive MCP client documentation and examples
+
+### Enhanced
+- **Provider System**: Expanded provider ecosystem with 8+ AI providers
+- **Tool System**: Enhanced tool architecture with MCP integration
+- **Memory Management**: Improved context handling and memory operations
+- **Code Quality**: Enhanced type hints and method documentation
+- **Example Scripts**: Updated all examples with fluent interface patterns
+
+### Fixed
+- **Composer Dependencies**: Updated to support Laravel 12.x
+- **Token Usage Tracking**: Removed cost tracking from token usage metrics
+- **Method Signatures**: Improved method consistency across the codebase
+- **Error Messages**: More descriptive error messages throughout
+
+### Technical Details
+
+#### MCP (Model Context Protocol) Support
+- **Universal MCP Client**: Full JSON-RPC 2.0 implementation
+- **Server Management**: Dynamic server configuration and health monitoring
+- **Tool Integration**: Seamless integration with external MCP tools
+- **Resource Management**: Support for MCP resources and prompts
+- **Caching**: Intelligent caching for tools, resources, and samples
+- **Error Handling**: Specific MCP exception classes and error codes
+
+#### New AI Providers
+- **Grok Provider**: X.AI Grok models with enhanced reasoning capabilities
+- **Gemini Provider**: Google Gemini models with multimodal support
+- **DeepSeek Provider**: DeepSeek models with coding specialization
+- **Groq Provider**: Groq inference engine for fast model execution
+- **Model Capabilities**: Detailed capability reporting for each provider
+
+#### Enhanced Architecture
+- **Fluent Interface**: Method chaining for improved developer experience
+- **Batch Operations**: Efficient bulk operations for agents and tasks
+- **Context Management**: Enhanced context building and memory integration
+- **Type Safety**: Improved type hints and return type declarations
+- **Documentation**: Comprehensive PHPDoc coverage for all methods
+
+## [alpha2] - 2025-09-06
 
 ### Added
 - **Comprehensive PHPDoc Documentation**: Complete documentation for all classes, methods, and properties
@@ -24,12 +73,17 @@ All notable changes to LaraFlowAI will be documented in this file.
 - **Flow Control**: Complex workflow management with conditional execution
 - **Memory System**: Short-term and long-term memory persistence with database storage
 - **LLM Factory**: Dynamic provider switching and custom provider registration
-- **Tool System**: Built-in tools for HTTP, Database, and Filesystem operations
+- **Tool System**: Built-in tools for HTTP, Database, Filesystem, and MCP operations
+- **MCP Integration**: Universal Model Context Protocol client for external service integration
 
 #### Providers
 - **OpenAI Provider**: Full support for GPT models with streaming
 - **Anthropic Provider**: Claude model support
 - **Ollama Provider**: Local model support with streaming
+- **Grok Provider**: X.AI Grok models with enhanced reasoning
+- **Gemini Provider**: Google Gemini models with multimodal support
+- **DeepSeek Provider**: DeepSeek models with coding specialization
+- **Groq Provider**: Groq inference engine for fast execution
 - **Custom Provider**: Easy registration of custom providers
 
 #### Memory & Persistence
@@ -100,8 +154,9 @@ None - This is the initial release.
 ### Dependencies
 
 - PHP ^8.1
-- Laravel ^10.0|^11.0
+- Laravel ^10.0|^11.0|^12.0
 - Guzzle HTTP ^7.0
+- Symfony Expression Language ^6.0|^7.0
 
 ### Installation
 
@@ -116,10 +171,24 @@ php artisan migrate
 Add to your `.env` file:
 
 ```env
+# Core AI Providers
 OPENAI_API_KEY=your_openai_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
 OLLAMA_HOST=http://localhost:11434
+
+# New AI Providers
+GROK_API_KEY=your_grok_api_key
+GEMINI_API_KEY=your_gemini_api_key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+GROQ_API_KEY=your_groq_api_key
+
+# Configuration
 LARAFLOWAI_DEFAULT_PROVIDER=openai
+
+# MCP Configuration (Optional)
+MCP_RETRY_ATTEMPTS=3
+MCP_CACHE_TOOLS_TTL=3600
+MCP_LOGGING_ENABLED=true
 ```
 
 ### Usage
@@ -127,22 +196,31 @@ LARAFLOWAI_DEFAULT_PROVIDER=openai
 ```php
 use LaraFlowAI\Facades\FlowAI;
 
-// Create an agent
-$agent = FlowAI::agent('Content Writer', 'Create engaging content');
+// Create an agent with fluent interface
+$agent = FlowAI::agent('Content Writer', 'Create engaging content')
+    ->addTool(new HttpTool())
+    ->addTool(new DatabaseTool())
+    ->setContext(['style' => 'professional']);
 
 // Create a task
-$task = FlowAI::task('Write a blog post about Laravel 11');
+$task = FlowAI::task('Write a blog post about Laravel 12');
 
 // Handle the task
 $response = $agent->handle($task);
 echo $response->getContent();
+
+// MCP Integration Example
+$mcpClient = new \LaraFlowAI\MCP\MCPClient($config);
+$tools = $mcpClient->getTools('claude-mcp');
+$response = $mcpClient->callTool('claude-mcp', 'search_web', ['query' => 'Laravel 12']);
 ```
 
 ### Documentation
 
 - **README.md**: Quick start guide
 - **docs/API.md**: Complete API documentation
-- **examples/**: Usage examples
+- **docs/UNIVERSAL_MCP_CLIENT.md**: MCP client documentation
+- **examples/**: Usage examples including MCP integration
 - **tests/**: Test examples
 
 ### Support
@@ -163,6 +241,10 @@ Contributions are welcome! Please see CONTRIBUTING.md for guidelines.
 ### Roadmap
 
 #### Version 1.1.0
+- [x] MCP (Model Context Protocol) integration
+- [x] Additional AI providers (Grok, Gemini, DeepSeek, Groq)
+- [x] Fluent interface improvements
+- [x] Laravel 12 compatibility
 - [ ] Vector database support for RAG
 - [ ] Advanced prompt templating
 - [ ] Custom tool builder
@@ -173,9 +255,11 @@ Contributions are welcome! Please see CONTRIBUTING.md for guidelines.
 - [ ] Advanced analytics
 - [ ] Custom dashboard themes
 - [ ] API versioning
+- [ ] Enhanced MCP server management
 
 #### Version 2.0.0
 - [ ] Graph-based workflows
 - [ ] Advanced AI models
 - [ ] Enterprise features
 - [ ] Cloud deployment tools
+- [ ] MCP marketplace integration

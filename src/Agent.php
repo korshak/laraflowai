@@ -206,7 +206,7 @@ class Agent
     {
         $taskContext = $task->getContext();
         
-        // Логування для дебагу
+        // Debug logging
         Log::info('LaraFlowAI: Building context', [
             'task_description' => $task->getDescription(),
             'task_context' => $taskContext,
@@ -218,7 +218,7 @@ class Agent
             'goal' => $this->goal,
             'task' => $task->getDescription(),
             'memory' => $this->recallRelevantMemory($task),
-            'task_context' => $taskContext, // Додаємо контекст з завдання
+            'task_context' => $taskContext, // Add context from task
         ]);
 
         return $context;
@@ -308,7 +308,7 @@ class Agent
             $prompt .= "\n";
         }
         
-        // Додаємо контекст з попередніх завдань
+        // Add context from previous tasks
         if (!empty($context['task_context'])) {
             $prompt .= "Context from previous tasks:\n";
             foreach ($context['task_context'] as $key => $value) {
@@ -319,7 +319,7 @@ class Agent
             $prompt .= "\n";
         }
         
-        // Логування для дебагу
+        // Debug logging
         Log::info('LaraFlowAI: Task context', [
             'task_context' => $context['task_context'] ?? 'empty',
             'context_keys' => array_keys($context),

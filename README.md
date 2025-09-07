@@ -1,9 +1,9 @@
 # LaraFlowAI
 
-[![Latest Version](https://img.shields.io/badge/version-alpha2-blue.svg)](https://packagist.org/packages/laraflowai/laraflowai)
+[![Latest Version](https://img.shields.io/badge/version-alpha3-blue.svg)](https://packagist.org/packages/laraflowai/laraflowai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Laravel](https://img.shields.io/badge/Laravel-10.x%20%7C%2011.x-red.svg)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple.svg)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-10.x%20%7C%2011.x%20%7C%2012.x-red.svg)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple.svg)](https://php.net)
 
 A powerful Laravel package for building multi-agent AI workflows. Create intelligent agents, crews, and flows with support for multiple AI providers and advanced workflow management.
 
@@ -13,8 +13,8 @@ A powerful Laravel package for building multi-agent AI workflows. Create intelli
 - 👥 **Crew Management**: Organize agents into collaborative teams
 - 🔄 **Flow Control**: Build sophisticated workflows with conditional logic
 - 🧠 **Memory System**: Short-term and long-term memory with intelligent recall
-- 🔌 **Multi-Provider Support**: OpenAI, Anthropic, Grok, Gemini, DeepSeek, and Ollama
-- 🛠️ **Extensible Tools**: HTTP, Database, Filesystem, and custom tool implementations
+- 🔌 **Multi-Provider Support**: OpenAI, Anthropic, Grok, Gemini, DeepSeek, Groq, and Ollama
+- 🛠️ **Extensible Tools**: HTTP, Database, Filesystem, MCP, and custom tool implementations
 - ⚡ **Queue Integration**: Asynchronous execution with Laravel queues
 - 📊 **Observability**: Comprehensive logging and performance analytics
 
@@ -22,8 +22,8 @@ A powerful Laravel package for building multi-agent AI workflows. Create intelli
 
 ### Requirements
 
-- PHP 8.2 or higher
-- Laravel 10.x or 11.x
+- PHP 8.1 or higher
+- Laravel 10.x, 11.x, or 12.x
 - Composer
 
 ### Quick Install
@@ -50,6 +50,7 @@ ANTHROPIC_API_KEY=your_anthropic_api_key
 GROK_API_KEY=your_grok_api_key
 GEMINI_API_KEY=your_gemini_api_key
 DEEPSEEK_API_KEY=your_deepseek_api_key
+GROQ_API_KEY=your_groq_api_key
 
 # Local AI (Ollama)
 OLLAMA_HOST=http://localhost:11434
@@ -66,15 +67,17 @@ LARAFLOWAI_DEFAULT_PROVIDER=openai
 ```php
 use LaraFlowAI\Facades\FlowAI;
 
-// Create an agent
+// Create an agent with fluent interface
 $agent = FlowAI::agent(
     role: 'Content Writer',
     goal: 'Create engaging blog posts about Laravel',
     provider: 'openai' // Optional: defaults to configured provider
-);
+)
+->addTool(new HttpTool())
+->setContext(['style' => 'professional']);
 
 // Create a task
-$task = FlowAI::task('Write a blog post about Laravel 11 features');
+$task = FlowAI::task('Write a blog post about Laravel 12 features');
 
 // Handle the task
 $response = $agent->handle($task);
@@ -91,12 +94,14 @@ echo "Execution time: " . $response->getExecutionTime() . "s";
 $openaiAgent = FlowAI::agent('Writer', 'High-quality content', 'openai');
 $grokAgent = FlowAI::agent('Writer', 'Creative and humorous content', 'grok');
 $geminiAgent = FlowAI::agent('Writer', 'Google-powered insights', 'gemini');
+$groqAgent = FlowAI::agent('Writer', 'Fast and efficient content', 'groq');
 
 // Compare responses
-$task = FlowAI::task('Explain Laravel 11 features');
+$task = FlowAI::task('Explain Laravel 12 features');
 $openaiResponse = $openaiAgent->handle($task);
 $grokResponse = $grokAgent->handle($task);
 $geminiResponse = $geminiAgent->handle($task);
+$groqResponse = $groqAgent->handle($task);
 ```
 
 ### Crew Usage
@@ -114,10 +119,11 @@ $tasks = [
     FlowAI::task('Review and improve the blog post from the previous task. The blog post is provided in the context.'),
 ];
 
-// Create crew
+// Create crew with fluent interface
 $crew = FlowAI::crew()
-    ->agents([$writer, $editor])
-    ->tasks($tasks);
+    ->addAgent($writer)
+    ->addAgent($editor)
+    ->addTasks($tasks);
 
 // Execute crew
 $result = $crew->execute();
@@ -156,7 +162,7 @@ $results = FlowAI::memory()->search('Laravel features', [
 
 // Store conversation context
 FlowAI::memory()->store('conversation_context', [
-    'topic' => 'Laravel 11',
+    'topic' => 'Laravel 12',
     'user_questions' => ['What are the new features?', 'How to migrate?'],
     'agent_responses' => ['Feature list...', 'Migration guide...']
 ]);
@@ -168,12 +174,14 @@ FlowAI::memory()->store('conversation_context', [
 use LaraFlowAI\Tools\HttpTool;
 use LaraFlowAI\Tools\DatabaseTool;
 use LaraFlowAI\Tools\FilesystemTool;
+use LaraFlowAI\Tools\MCPTool;
 
 // Create a research agent with tools
 $agent = FlowAI::agent('Research Assistant', 'Gather information from various sources')
     ->addTool(new HttpTool())
     ->addTool(new DatabaseTool())
-    ->addTool(new FilesystemTool());
+    ->addTool(new FilesystemTool())
+    ->addTool(new MCPTool());
 
 // Create a task with tool inputs
 $task = FlowAI::task('Research the latest Laravel features and create a summary')
@@ -271,6 +279,7 @@ Each provider can be configured in `config/laraflowai.php`:
 - **Grok**: Grok-4, Grok-3 with chat mode and humor
 - **Gemini**: Google's Gemini models with chat mode
 - **DeepSeek**: DeepSeek Chat and Reasoner models
+- **Groq**: Fast inference engine for various models
 - **Ollama**: Local models like Llama, Mistral, etc.
 
 ## 🧪 Testing
@@ -317,6 +326,7 @@ tail -f storage/logs/laraflowai.log
 ## 📚 Documentation
 
 - **[API Documentation](docs/API.md)** - Complete API reference
+- **[Universal MCP Client](docs/UNIVERSAL_MCP_CLIENT.md)** - MCP integration guide
 - **[Laravel Quick Start](docs/LARAVEL_QUICKSTART.md)** - 5-minute setup guide
 - **[Laravel Usage Guide](docs/LARAVEL_USAGE.md)** - Comprehensive integration guide
 - **[Examples](examples/)** - Real-world usage examples and patterns
